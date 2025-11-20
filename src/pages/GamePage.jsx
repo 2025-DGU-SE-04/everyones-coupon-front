@@ -4,8 +4,8 @@ import { useState } from "react";
 import HeaderBanner from "../components/HeaderBanner";
 import SearchBar from "../components/SearchBar";
 import AddCouponButton from "../components/AddCouponButton";
-import FeedbackModal from "../components/FeedbackModal";
-
+//import FeedbackModal from "../components/FeedbackModal";
+import CouponItem from "../components/CouponItem";
 export default function GamePage() {
   const { id } = useParams();
 
@@ -87,35 +87,11 @@ export default function GamePage() {
         <h3 className="text-xl font-bold mb-1">유효 쿠폰</h3>
 
         {coupons.map((c) => (
-          <div
-            key={c.id}
-            className="bg-white p-4 rounded-xl shadow flex justify-between items-center"
-          >
-            <div>
-              <div className="font-bold">{c.code}</div>
-              <div className="text-gray-700">{c.reward}</div>
-              <div className="text-gray-500 text-sm">
-                만료: {c.expire ? c.expire : "만료일 없음"}
-              </div>
-            </div>
-
-            <button
-              onClick={() => setSelectedCoupon(c)}
-              className="bg-gray-200 hover:bg-gray-300 py-2 px-4 rounded-lg text-sm font-semibold"
-            >
-              피드백
-            </button>
-          </div>
-        ))}
+  <CouponItem key={c.id} coupon={c} />
+))}
       </div>
 
-      {/* 피드백 모달 */}
-      {selectedCoupon && (
-        <FeedbackModal
-          coupon={selectedCoupon}
-          onClose={() => setSelectedCoupon(null)}
-        />
-      )}
+
     </div>
   );
 }
