@@ -26,7 +26,7 @@ export default function GameList({ fetchGames }) {
     };
 
     load();
-  }, [page]);
+  }, [page, fetchGames, hasMore, loading]);
 
   // 마지막 요소 감지 → page 증가
   const lastElementRef = useRef();
