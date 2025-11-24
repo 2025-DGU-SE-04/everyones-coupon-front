@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import GameCard from "./GameCard";
+import { getGameList } from "../api/gameApi";
 
 export default function GameList({ fetchGames }) {
   const [games, setGames] = useState([]);
@@ -14,7 +15,7 @@ export default function GameList({ fetchGames }) {
       if (!hasMore || loading) return;
 
       setLoading(true);
-      const result = await fetchGames(page);
+      const result = await getGameList(page);
 
       if (result.length === 0) {
         setHasMore(false);
