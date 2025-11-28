@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function GameCard({ id, name, icon }) {
+export default function GameCard({ id, title, gameImageUrl }) {
   const navigate = useNavigate();
 
   return (
@@ -9,12 +9,12 @@ export default function GameCard({ id, name, icon }) {
       className="w-full bg-white rounded-xl shadow p-4 flex items-center cursor-pointer hover:bg-gray-50 transition border"
     >
       <img
-        src={icon}
-        alt={name}
+        src={gameImageUrl}
+        alt={title}
         className="w-14 h-14 rounded-xl object-cover mr-4"
       />
 
-      <div className="text-lg font-semibold">{name}</div>
+      <div className="text-lg font-semibold">{title}</div>
     </div>
   );
 }

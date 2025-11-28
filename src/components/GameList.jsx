@@ -12,22 +12,17 @@ export default function GameList({ fetchGames }) {
   // 페이지 변경 시 데이터 불러오기
   useEffect(() => {
     const load = async () => {
-      if (!hasMore || loading) return;
+      
 
       setLoading(true);
-      const result = await getGameList(page);
-
-      if (result.length === 0) {
-        setHasMore(false);
-      } else {
-        setGames((prev) => [...prev, ...result]);
-      }
-
+      const result = await getGameList(page);//이렇게 하니 게임배너 2배중복이 사라짐.
+      setGames(result);
       setLoading(false);
+
     };
 
     load();
-  }, [page]);
+  }, []);
 
   // 마지막 요소 감지 → page 증가
   const lastElementRef = useRef();

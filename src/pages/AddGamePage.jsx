@@ -1,22 +1,26 @@
 import { useState } from "react";
 import HeaderBanner from "../components/HeaderBanner";
-
+import { createGame } from "../api/gameApi"; 
+//id, title, gameImageUrl
 export default function AddGamePage() {
-  const [name, setName] = useState("");
-  const [howToUse, setHowToUse] = useState("");
-  const [link, setLink] = useState("");
+  const [title, setName] = useState("");
+  const [gameDescription, setHowToUse] = useState("");
+  const [couponUsageLink, setLink] = useState("");
 
   const handleSubmit = () => {
-    if (!name.trim()) {
+    if (!title.trim()) {
       alert("게임 이름을 입력하세요.");
       return;
     }
 
     const data = {
-      name,
-      howToUse,
-      link,
+      title,
+      gameDescription,
+      couponUsageLink,
     };
+    
+    createGame(data);
+    
 
     console.log("게임 등록됨:", data);
     alert("게임 등록이 완료되었습니다!");
@@ -40,7 +44,7 @@ export default function AddGamePage() {
           <input
             type="text"
             className="w-full border p-3 rounded-lg mt-1"
-            value={name}
+            value={title}
             onChange={(e) => setName(e.target.value)}
             placeholder="예: 카피바라 어드벤처"
           />
@@ -50,7 +54,7 @@ export default function AddGamePage() {
           <label className="font-semibold">쿠폰 사용 방법</label>
           <textarea
             className="w-full border p-3 rounded-lg mt-1 h-32"
-            value={howToUse}
+            value={gameDescription}
             onChange={(e) => setHowToUse(e.target.value)}
             placeholder="쿠폰 사용 방법을 입력하세요"
           />
@@ -61,7 +65,7 @@ export default function AddGamePage() {
           <input
             type="text"
             className="w-full border p-3 rounded-lg mt-1"
-            value={link}
+            value={couponUsageLink}
             onChange={(e) => setLink(e.target.value)}
             placeholder="예: https://example.com/coupon"
           />
