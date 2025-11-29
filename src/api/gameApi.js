@@ -19,13 +19,27 @@ export const searchGame = async (keyword,page=0) => {              //게임검�
     return res.data;
   };
   
-  export const addCoupon = async (couponList) => {
+  export const addCoupon = async (gameId, couponData) => {
+    console.log("✅ 최종 전송 데이터 (진짜):", couponData);
+    console.log("✅ gameId:", gameId);
+  
     const res = await axios.post(
       `${BASE_URL}/coupons`,
-      couponList   // 배열 그대로 전송
+      couponData,
+      {
+        params: { gameId },   // ✅ 쿼리스트링을 params로 강제 지정
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
+  
     return res.data;
   };
+  
+  
+  
+  
   
 
 export const getGameDetail = async (gameId) => {            //쿠폰 조회

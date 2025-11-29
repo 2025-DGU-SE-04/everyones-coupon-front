@@ -10,7 +10,9 @@ export default function GameList({ fetchGames }) {
   const observerRef = useRef();
 
   // 페이지 변경 시 데이터 불러오기
+
   useEffect(() => {
+    
     const load = async () => {
       
 
@@ -27,6 +29,7 @@ export default function GameList({ fetchGames }) {
   // 마지막 요소 감지 → page 증가
   const lastElementRef = useRef();
   useEffect(() => {
+    
     if (loading) return;
 
     if (observerRef.current) observerRef.current.disconnect();

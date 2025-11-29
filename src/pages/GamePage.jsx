@@ -1,21 +1,26 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getGameDetail, getGameCoupons } from "../api/gameApi";
+import HeaderBanner from "../components/HeaderBanner";
 import GameInfoSection from "../components/GameInfoSection";
 import CouponItem from "../components/CouponItem";
 
+import AddCouponButton from "../components/AddCouponButton";
+
 export default function GamePage() {
-  const { id } = useParams();
+  const { gameId } = useParams();//
   const [game, setGame] = useState(null);
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    
+
     const loadData = async () => {
       try {
         // 1) 게임 상세 조회
-        const gameRes = await getGameDetail(id);
-
+        const gameRes = await getGameDetail(gameId);
+        
         const mappedGame = {
           id: gameRes.id,
           name: gameRes.title,                   // ← 백엔드 title
@@ -27,7 +32,7 @@ export default function GamePage() {
         setGame(mappedGame);
 
         // 2) 쿠폰 목록 조회
-        const couponRes = await getGameCoupons(id);
+        const couponRes = await getGameCoupons(gameId);
 
         const mappedCoupons = couponRes.content.map((c) => ({
           id: c.id,
@@ -38,7 +43,7 @@ export default function GamePage() {
           validCount: c.validCount,
           invalidCount: c.invalidCount,
         }));
-
+        console.log("현재 gameId:", gameId);
         setCoupons(mappedCoupons);
       } catch (error) {
         console.error("게임 상세 불러오기 실패:", error);
@@ -48,7 +53,7 @@ export default function GamePage() {
     };
 
     loadData();
-  }, [id]);
+  }, [gameId]);
 
   if (loading) {
     return (
@@ -69,9 +74,11 @@ export default function GamePage() {
   return (
     <div className="w-full flex flex-col items-center px-4 mt-10">
       <div className="w-full max-w-2xl">
+        <HeaderBanner></HeaderBanner>
         {/* 게임 상단 정보 섹션 */}
         <GameInfoSection game={game} />
-
+        {/* 쿠폰 추가 버튼 */}
+        <AddCouponButton gameId={gameId}/>
         {/* 쿠폰 리스트 */}
         <h2 className="text-xl font-semibold mt-10 mb-4">유효 쿠폰</h2>
 

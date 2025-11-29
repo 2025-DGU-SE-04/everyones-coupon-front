@@ -9,11 +9,12 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/game/:gameId" element={<GamePage />} />
-        <Route path="/add-game" element={<AddGamePage />} />
-        <Route path="/add-coupon/:gameId" element={<AddCouponPage />} />
-        <Route path="/game/:id/add-coupon" element={<AddCouponPage />} />
 
+        {/* ✅ gameId로 통일 */}
+        <Route path="/game/:gameId" element={<GamePage />} />
+        <Route path="/game/:gameId/add-coupon" element={<AddCouponPage />} />
+
+        <Route path="/add-game" element={<AddGamePage />} />
       </Routes>
     </BrowserRouter>
   );
