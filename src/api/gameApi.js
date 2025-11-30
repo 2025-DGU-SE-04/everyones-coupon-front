@@ -54,7 +54,65 @@ export const getGameCoupons = async (gameId, page = 0, size = 50) => {
   
     return res.data;   // content를 제거하면 안됨!
   };
-  
 
+// ==================== 관리자 API ====================
+// 모든 관리자 API는 쿠키 기반 인증을 사용 (withCredentials: true)
 
+// 관리자 로그인 - 백엔드가 쿠키를 자동으로 설정
+export const adminLogin = async (token) => {
+  const res = await axios.post(
+    `${BASE_URL}/admin/login`,
+    { token },
+    { withCredentials: true }
+  );
+  return res.data;
+};
+
+// 관리자 로그아웃 - 백엔드가 쿠키를 자동으로 삭제
+export const adminLogout = async () => {
+  const res = await axios.post(
+    `${BASE_URL}/admin/logout`,
+    {},
+    { withCredentials: true }
+  );
+  return res.data;
+};
+
+// 게임에 오피셜 마크 부여
+export const setGameOfficial = async (gameId, official) => {
+  const res = await axios.post(
+    `${BASE_URL}/admin/games/${gameId}/official`,
+    { official },
+    { withCredentials: true }
+  );
+  return res.data;
+};
+
+// 게임 대표 이미지 지정
+export const setGameImage = async (gameId, imageData) => {
+  const res = await axios.post(
+    `${BASE_URL}/admin/games/${gameId}/image`,
+    { imageData },
+    { withCredentials: true }
+  );
+  return res.data;
+};
+
+// 게임 삭제
+export const deleteGame = async (gameId) => {
+  const res = await axios.delete(
+    `${BASE_URL}/admin/games/${gameId}`,
+    { withCredentials: true }
+  );
+  return res.data;
+};
+
+// 쿠폰 삭제
+export const deleteCoupon = async (couponId) => {
+  const res = await axios.delete(
+    `${BASE_URL}/admin/coupons/${couponId}`,
+    { withCredentials: true }
+  );
+  return res.data;
+};
 
