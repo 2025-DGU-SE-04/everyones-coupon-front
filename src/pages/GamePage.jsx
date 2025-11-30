@@ -12,12 +12,17 @@ export default function GamePage() {
   const [game, setGame] = useState(null);
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sortLoading, setSortLoading] = useState(false); // 정렬 변경 시 로딩
   const [error, setError] = useState("");
   const [sortBy, setSortBy] = useState("createdAt"); // 정렬 옵션: "createdAt" | "score"
 
-  const loadCoupons = async (sortOption = sortBy) => {
+  const loadCoupons = async (sortOption = sortBy, isInitialLoad = false) => {
     try {
-      setLoading(true);
+      if (isInitialLoad) {
+        setLoading(true);
+      } else {
+        setSortLoading(true);
+      }
       setError("");
       
       const sortArray = [sortOption]; // 백엔드가 배열을 기대하므로 배열로 변환
@@ -39,7 +44,11 @@ export default function GamePage() {
       console.error("쿠폰 목록 불러오기 실패:", error);
       setError("쿠폰 목록을 불러오는데 실패했습니다.");
     } finally {
-      setLoading(false);
+      if (isInitialLoad) {
+        setLoading(false);
+      } else {
+        setSortLoading(false);
+      }
     }
   };
 
@@ -60,7 +69,7 @@ export default function GamePage() {
         setGame(mappedGame);
 
         // 게임 정보 로드 후 쿠폰 목록 로드
-        await loadCoupons();
+        await loadCoupons(sortBy, true);
       } catch (error) {
         console.error("게임 상세 불러오기 실패:", error);
         setError("게임 정보를 불러오는데 실패했습니다.");
@@ -72,8 +81,9 @@ export default function GamePage() {
   }, [gameId]);
 
   const handleSortChange = async (newSort) => {
+    if (newSort === sortBy) return; // 같은 정렬 옵션 선택 시 무시
     setSortBy(newSort);
-    await loadCoupons(newSort);
+    await loadCoupons(newSort, false);
   };
 
   if (loading) {
@@ -122,7 +132,16 @@ export default function GamePage() {
               </p>
             </div>
             {coupons.length > 0 && (
-              <SortSelector currentSort={sortBy} onSortChange={handleSortChange} />
+              <div className="flex items-center gap-2">
+                <SortSelector 
+                  currentSort={sortBy} 
+                  onSortChange={handleSortChange}
+                  disabled={sortLoading}
+                />
+                {sortLoading && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-600 border-t-transparent"></div>
+                )}
+              </div>
             )}
           </div>
         </div>

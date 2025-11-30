@@ -48,12 +48,17 @@ export const getGameDetail = async (gameId) => {            //쿠폰 조회
 };
 
 export const getGameCoupons = async (gameId, page = 0, size = 50, sort = ["createdAt"]) => {
+    // Spring Boot는 배열 파라미터를 sort=value1&sort=value2 형태로 받음
+    // axios는 기본적으로 sort[]=value 형태로 보내므로 paramsSerializer 사용
     const res = await axios.get(`${BASE_URL}/coupons`, {
       params: { 
         gameId, 
         page, 
         size,
-        sort: sort // 배열을 쿼리 파라미터로 전달
+        sort: sort
+      },
+      paramsSerializer: {
+        indexes: null // sort=value 형태로 전달 (배열 인덱스 없이)
       }
     });
   

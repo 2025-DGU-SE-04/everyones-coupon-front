@@ -5,8 +5,9 @@ import Button from "./ui/Button";
  * 
  * @param {string} currentSort - 현재 정렬 옵션 ('createdAt' | 'score')
  * @param {function} onSortChange - 정렬 변경 핸들러
+ * @param {boolean} disabled - 비활성화 상태
  */
-export default function SortSelector({ currentSort, onSortChange }) {
+export default function SortSelector({ currentSort, onSortChange, disabled = false }) {
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm font-medium text-secondary-600">정렬:</span>
@@ -15,6 +16,7 @@ export default function SortSelector({ currentSort, onSortChange }) {
           variant={currentSort === "createdAt" ? "primary" : "outline"}
           size="sm"
           onClick={() => onSortChange("createdAt")}
+          disabled={disabled}
         >
           최신순
         </Button>
@@ -22,6 +24,7 @@ export default function SortSelector({ currentSort, onSortChange }) {
           variant={currentSort === "score" ? "primary" : "outline"}
           size="sm"
           onClick={() => onSortChange("score")}
+          disabled={disabled}
         >
           유효성순
         </Button>
