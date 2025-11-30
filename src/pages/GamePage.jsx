@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getGameDetail, getGameCoupons } from "../api/gameApi";
 import HeaderBanner from "../components/HeaderBanner";
