@@ -10,5 +10,6 @@ export default function HeaderBanner() {
     >
       모두의 쿠폰
     </div>
+    
   );
 }

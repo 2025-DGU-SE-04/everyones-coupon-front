@@ -1,100 +1,87 @@
 import { useState } from "react";
+import { voteCoupon, deleteCoupon } from "../api/gameApi";
+import { useAdminStore } from "../store/adminStore";
 
 export default function CouponItem({ coupon }) {
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(null); // like / dislike
-  const [comment, setComment] = useState("");
+  const [validCount, setValidCount] = useState(coupon.validCount);
+  const [invalidCount, setInvalidCount] = useState(coupon.invalidCount);
+  const isAdmin = useAdminStore((state) => state.isAdmin);
+
+  // ✅ 추천 / 비추천
+  const handleVote = async (isWorking) => {
+    try {
+      await voteCoupon(coupon.id, isWorking);
+
+      if (isWorking) {
+        setValidCount((prev) => prev + 1);
+      } else {
+        setInvalidCount((prev) => prev + 1);
+      }
+    } catch (e) {
+      console.error("피드백 실패:", e);
+      alert("피드백 등록 실패");
+    }
+  };
+
+  // ✅ 관리자 쿠폰 삭제
+  const handleDelete = async () => {
+    if (!window.confirm("이 쿠폰을 삭제하시겠습니까?")) return;
+
+    try {
+      await deleteCoupon(coupon.id);
+      alert("쿠폰 삭제 완료");
+      window.location.reload(); // ✅ 가장 안전한 방식
+    } catch (e) {
+      console.error(e);
+      alert("관리자 권한이 없거나 삭제 실패");
+    }
+  };
 
   return (
-    <div className="w-full bg-white rounded-xl shadow p-4 mb-3 transition">
-      
-      {/* 기본 쿠폰 카드 */}
-      <div className="flex justify-between items-center">
-        <div>
-          <div className="text-lg font-semibold">{coupon.code}</div>
-          <div className="text-gray-600">{coupon.reward}</div>
-          <div className="text-sm text-gray-500">
-            {coupon.expire ? `만료: ${coupon.expire}` : "만료일 없음"}
-          </div>
-        </div>
+    <div className="border rounded-xl p-4 mb-4 shadow bg-white relative">
+      {/* ✅ 쿠폰 코드 */}
+      <div className="font-semibold text-lg mb-1">{coupon.code}</div>
+
+      {/* ✅ 보상 */}
+      <div className="text-sm text-gray-600 mb-2">{coupon.reward}</div>
+
+      {/* ✅ 만료 */}
+      <div className="text-xs text-gray-500 mb-3">
+        ⏰ {coupon.expirationDate ? coupon.expirationDate : "무기한"} /{" "}
+        {coupon.dday}
+      </div>
+
+      {/* ✅ 누적 추천 / 비추천 */}
+      <div className="flex gap-4 text-sm mb-3">
+        👍 {validCount} | 👎 {invalidCount}
+      </div>
+
+      {/* ✅ 추천 / 비추천 버튼 */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => handleVote(true)}
+          className="px-3 py-1 text-sm rounded bg-green-500 text-white hover:opacity-90"
+        >
+          추천
+        </button>
 
         <button
-          className="bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200"
-          onClick={() => setOpen((prev) => !prev)}
+          onClick={() => handleVote(false)}
+          className="px-3 py-1 text-sm rounded bg-red-500 text-white hover:opacity-90"
         >
-          피드백
+          비추천
         </button>
       </div>
 
-      {/* 🔥 항상 보이는 누적 피드백 수 */}
-      <div className="flex gap-4 mt-2 text-sm text-gray-600">
-        <div>👍 {coupon.like}</div>
-        <div>👎 {coupon.dislike}</div>
-      </div>
-      {/* 🔥 피드백 박스 (슬라이드 열림) */}
-      <div
-        className={`
-          overflow-hidden transition-all duration-300
-          ${open ? "max-h-[380px] opacity-100 mt-3" : "max-h-0 opacity-0"}
-        `}
-      >
-        <div className="border rounded-xl p-4 bg-gray-50 flex flex-col gap-4">
-
-          {/* 누적 피드백 */}
-          <div className="flex justify-center gap-6 text-gray-600 text-sm">
-            <div>👍 {coupon.like}</div>
-            <div>👎 {coupon.dislike}</div>
-          </div>
-
-          {/* 추천/비추천 */}
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={() => setSelected("like")}
-              className={`
-                px-4 py-2 rounded-xl border transition-all transform
-                hover:scale-105 hover:bg-yellow-50
-                ${selected === "like" ? "border-blue-500 bg-blue-50" : ""}
-              `}
-            >
-              👍 유효함
-            </button>
-
-            <button
-              onClick={() => setSelected("dislike")}
-              className={`
-                px-4 py-2 rounded-xl border transition-all transform
-                hover:scale-105 hover:bg-red-50
-                ${selected === "dislike" ? "border-red-500 bg-red-50" : ""}
-              `}
-            >
-              👎 유효하지 않음
-            </button>
-          </div>
-
-          {/* 의견 입력 */}
-          <div
-            className={`
-              overflow-hidden transition-all duration-300
-              ${selected ? "max-h-40 opacity-100" : "max-h-0 opacity-0"}
-            `}
-          >
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="추가 의견 입력"
-              className="w-full border p-3 rounded-lg resize-none h-24 mt-2"
-            />
-          </div>
-
-          {/* 제출 버튼 */}
-          <button
-            onClick={() => alert("피드백 제출 완료!")}
-            className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition"
-          >
-            제출
-          </button>
-        </div>
-      </div>
+      {/* ✅ 관리자만 삭제 버튼 */}
+      {isAdmin && (
+        <button
+          onClick={handleDelete}
+          className="absolute top-3 right-3 bg-red-600 text-white text-xs px-2 py-1 rounded hover:bg-red-700"
+        >
+          ❌ 삭제
+        </button>
+      )}
     </div>
   );
 }
