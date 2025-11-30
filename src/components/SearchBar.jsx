@@ -32,6 +32,23 @@ export default function SearchBar() {
     return () => clearTimeout(delay);
   }, [keyword]);
 
+  const handleFocus = async () => {
+    // 이미 검색어 입력했거나, 추천 목록이 있으면 굳이 다시 안 부름
+    if (keyword.trim() || suggestions.length > 0) return;
+
+    try {
+      setLoading(true);
+      const result = await searchGame(""); // 빈 문자열로 기본 검색
+      const list = result.content ?? result;
+      setSuggestions(list.slice(0, 3));    // 3개만 잘라서 노출
+    } catch (e) {
+      console.error("기본 추천 로딩 실패", e);
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSelect = (id) => {
     navigate(`/game/${id}`);
     setSuggestions([]);
@@ -61,6 +78,7 @@ export default function SearchBar() {
           placeholder="게임을 검색하세요..."
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
+          onFocus={handleFocus}
           className="w-full pl-12 pr-4 py-4 text-base bg-white border-2 border-secondary-200 rounded-2xl shadow-soft focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 placeholder:text-secondary-400"
         />
         {loading && (
