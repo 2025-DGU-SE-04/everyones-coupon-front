@@ -47,9 +47,10 @@ export const getGameDetail = async (gameId) => {            //쿠폰 조회
   return res.data;
 };
 
-export const getGameCoupons = async (gameId, page = 0, size = 50, sort = ["createdAt"]) => {
+export const getGameCoupons = async (gameId, page = 0, size = 50, sort = ["createdAt,desc"]) => {
     // Spring Boot는 배열 파라미터를 sort=value1&sort=value2 형태로 받음
     // axios는 기본적으로 sort[]=value 형태로 보내므로 paramsSerializer 사용
+    // 정렬 방향: createdAt,desc (최신순), score,desc (유효성순)
     const res = await axios.get(`${BASE_URL}/coupons`, {
       params: { 
         gameId, 
@@ -64,6 +65,18 @@ export const getGameCoupons = async (gameId, page = 0, size = 50, sort = ["creat
   
     return res.data;   // content를 제거하면 안됨!
   };
+
+// 쿠폰 피드백 투표
+export const voteCoupon = async (couponId, isWorking) => {
+  const res = await axios.post(
+    `${BASE_URL}/coupons/${couponId}/vote`,
+    {},
+    {
+      params: { isWorking }
+    }
+  );
+  return res.data;
+};
 
 // ==================== 관리자 API ====================
 // 모든 관리자 API는 쿠키 기반 인증을 사용 (withCredentials: true)

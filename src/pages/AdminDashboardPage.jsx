@@ -13,7 +13,7 @@ export default function AdminDashboardPage() {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [imageModal, setImageModal] = useState({ open: false, gameId: null, imageData: "" });
+  const [imageModal, setImageModal] = useState({ open: false, gameId: null, imageData: "", preview: null });
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -73,19 +73,51 @@ export default function AdminDashboardPage() {
   };
 
   const handleOpenImageModal = (gameId) => {
-    setImageModal({ open: true, gameId, imageData: "" });
+    setImageModal({ open: true, gameId, imageData: "", preview: null });
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 파일 타입 검증
+    if (!file.type.startsWith('image/')) {
+      alert("이미지 파일만 업로드 가능합니다.");
+      return;
+    }
+
+    // 파일 크기 제한 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("파일 크기는 5MB 이하여야 합니다.");
+      return;
+    }
+
+    // FileReader로 base64 인코딩
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64String = event.target.result; // data:image/jpeg;base64,/9j/4AAQ...
+      setImageModal({
+        ...imageModal,
+        imageData: base64String,
+        preview: base64String
+      });
+    };
+    reader.onerror = () => {
+      alert("파일 읽기에 실패했습니다.");
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSetImage = async () => {
     if (!imageModal.imageData.trim()) {
-      alert("이미지 URL을 입력해주세요.");
+      alert("이미지를 선택해주세요.");
       return;
     }
 
     try {
       await setGameImage(imageModal.gameId, imageModal.imageData);
       alert("이미지가 설정되었습니다.");
-      setImageModal({ open: false, gameId: null, imageData: "" });
+      setImageModal({ open: false, gameId: null, imageData: "", preview: null });
       loadGames();
     } catch (err) {
       console.error("이미지 설정 실패:", err);
@@ -216,19 +248,40 @@ export default function AdminDashboardPage() {
       {imageModal.open && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md">
-            <h3 className="text-xl font-bold text-secondary-900 mb-4">이미지 URL 설정</h3>
-            <Input
-              label="이미지 URL"
-              placeholder="https://example.com/image.jpg"
-              value={imageModal.imageData}
-              onChange={(e) => setImageModal({ ...imageModal, imageData: e.target.value })}
-            />
+            <h3 className="text-xl font-bold text-secondary-900 mb-4">이미지 업로드</h3>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-secondary-700 mb-2">
+                이미지 파일 선택
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="w-full text-sm text-secondary-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer"
+              />
+              <p className="text-xs text-secondary-500 mt-1">최대 5MB, 이미지 파일만 가능</p>
+            </div>
+
+            {imageModal.preview && (
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-secondary-700 mb-2">
+                  미리보기
+                </label>
+                <img
+                  src={imageModal.preview}
+                  alt="미리보기"
+                  className="w-full h-48 object-cover rounded-xl border-2 border-secondary-200"
+                />
+              </div>
+            )}
+
             <div className="flex gap-3 mt-6">
               <Button
                 variant="outline"
                 size="md"
                 fullWidth
-                onClick={() => setImageModal({ open: false, gameId: null, imageData: "" })}
+                onClick={() => setImageModal({ open: false, gameId: null, imageData: "", preview: null })}
               >
                 취소
               </Button>
@@ -237,6 +290,7 @@ export default function AdminDashboardPage() {
                 size="md"
                 fullWidth
                 onClick={handleSetImage}
+                disabled={!imageModal.imageData}
               >
                 설정
               </Button>

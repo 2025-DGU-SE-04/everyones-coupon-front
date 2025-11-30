@@ -25,7 +25,9 @@ export default function GamePage() {
       }
       setError("");
       
-      const sortArray = [sortOption]; // 백엔드가 배열을 기대하므로 배열로 변환
+      // 정렬 옵션을 백엔드 형식으로 변환 (desc 추가)
+      const sortValue = sortOption === "createdAt" ? "createdAt,desc" : "score,desc";
+      const sortArray = [sortValue]; // 백엔드가 배열을 기대하므로 배열로 변환
       const couponRes = await getGameCoupons(gameId, 0, 50, sortArray);
       
       const mappedCoupons = couponRes.content.map((c) => ({
@@ -153,7 +155,11 @@ export default function GamePage() {
           </div>
         ) : (
           coupons.map((coupon) => (
-            <CouponItem key={coupon.id} coupon={coupon} />
+            <CouponItem 
+              key={coupon.id} 
+              coupon={coupon} 
+              onVoteUpdate={() => loadCoupons(sortBy, false)}
+            />
           ))
         )}
       </div>
