@@ -1,14 +1,21 @@
 import { useNavigate } from "react-router-dom";
+import Button from "./ui/Button";
 
 export default function AddGameButton() {
   const navigate = useNavigate();
 
   return (
-    <button
-      onClick={() => navigate("/add-game")}
-      className="mt-6 w-full max-w-xl bg-blue-600 text-white py-4 rounded-xl text-lg font-semibold shadow hover:bg-blue-700 transition"
-    >
-      + 게임 추가하기
-    </button>
+    <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 mb-6">
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        onClick={() => navigate("/add-game")}
+        className="shadow-medium hover:shadow-strong"
+      >
+        <span className="mr-2">+</span>
+        게임 추가하기
+      </Button>
+    </div>
   );
 }

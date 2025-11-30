@@ -1,78 +1,127 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import HeaderBanner from "../components/HeaderBanner";
+import { createGame } from "../api/gameApi";
+import Card from "../components/ui/Card";
+import Input from "../components/ui/Input";
+import Textarea from "../components/ui/Textarea";
+import Button from "../components/ui/Button";
 
 export default function AddGamePage() {
-  const [name, setName] = useState("");
-  const [howToUse, setHowToUse] = useState("");
-  const [link, setLink] = useState("");
+  const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [gameDescription, setGameDescription] = useState("");
+  const [couponUsageLink, setCouponUsageLink] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = () => {
-    if (!name.trim()) {
-      alert("게임 이름을 입력하세요.");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!title.trim()) {
+      setError("게임 이름을 입력해주세요.");
       return;
     }
 
-    const data = {
-      name,
-      howToUse,
-      link,
-    };
+    try {
+      setLoading(true);
+      const data = {
+        title,
+        gameDescription,
+        couponUsageLink,
+      };
 
-    console.log("게임 등록됨:", data);
-    alert("게임 등록이 완료되었습니다!");
-
-    // 입력 초기화
-    setName("");
-    setHowToUse("");
-    setLink("");
+      await createGame(data);
+      alert("게임이 등록되었습니다!");
+      
+      // 입력 초기화
+      setTitle("");
+      setGameDescription("");
+      setCouponUsageLink("");
+      
+      navigate("/");
+    } catch (err) {
+      console.error("게임 등록 실패:", err);
+      setError(err.response?.data?.message || "게임 등록 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="w-full flex flex-col items-center pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-secondary-50 to-white">
       <HeaderBanner />
 
-      <h2 className="text-2xl font-bold mt-6 mb-4">게임 추가하기</h2>
-
-      <div className="w-full max-w-xl bg-white shadow rounded-xl p-6 flex flex-col gap-4">
-
-        <div>
-          <label className="font-semibold">게임 이름</label>
-          <input
-            type="text"
-            className="w-full border p-3 rounded-lg mt-1"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="예: 카피바라 어드벤처"
-          />
+      <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 py-8">
+        <div className="mb-6">
+          <button
+            onClick={() => navigate("/")}
+            className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center gap-1 mb-4 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            홈으로 돌아가기
+          </button>
+          <h1 className="text-3xl font-bold text-secondary-900">게임 추가하기</h1>
+          <p className="text-sm text-secondary-500 mt-2">새로운 게임 정보를 입력해주세요</p>
         </div>
 
-        <div>
-          <label className="font-semibold">쿠폰 사용 방법</label>
-          <textarea
-            className="w-full border p-3 rounded-lg mt-1 h-32"
-            value={howToUse}
-            onChange={(e) => setHowToUse(e.target.value)}
-            placeholder="쿠폰 사용 방법을 입력하세요"
-          />
-        </div>
+        <Card>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-danger-50 border-2 border-danger-200 text-danger-700 px-4 py-3 rounded-xl text-sm">
+                {error}
+              </div>
+            )}
 
-        <div>
-          <label className="font-semibold">쿠폰 사용 링크</label>
-          <input
-            type="text"
-            className="w-full border p-3 rounded-lg mt-1"
-            value={link}
-            onChange={(e) => setLink(e.target.value)}
-            placeholder="예: https://example.com/coupon"
-          />
-        </div>
+            <Input
+              label="게임 이름"
+              placeholder="예: 카피바라 어드벤처"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+            />
 
-        <button
-          onClick={handleSubmit}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold"
-        >
-          등록하기
-        </button>
+            <Textarea
+              label="쿠폰 사용 방법"
+              placeholder="쿠폰 사용 방법을 입력하세요"
+              value={gameDescription}
+              onChange={(e) => setGameDescription(e.target.value)}
+              className="min-h-[120px]"
+            />
+
+            <Input
+              label="쿠폰 사용 링크"
+              type="url"
+              placeholder="예: https://example.com/coupon"
+              value={couponUsageLink}
+              onChange={(e) => setCouponUsageLink(e.target.value)}
+            />
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                fullWidth
+                onClick={() => navigate("/")}
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                fullWidth
+                disabled={loading}
+              >
+                {loading ? "등록 중..." : "등록하기"}
+              </Button>
+            </div>
+          </form>
+        </Card>
       </div>
     </div>
   );

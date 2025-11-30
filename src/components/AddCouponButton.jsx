@@ -1,15 +1,21 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import Button from "./ui/Button";
 
-export default function AddCouponButton() {
+export default function AddCouponButton({ gameId }) {
   const navigate = useNavigate();
-  const { id } = useParams();
 
   return (
-    <button
-      onClick={() => navigate(`/game/${id}/add-coupon`)}
-      className="w-full max-w-xl bg-blue-600 text-white py-3 rounded-xl font-semibold shadow hover:bg-blue-700 transition mt-6"
-    >
-      + 쿠폰 추가하기
-    </button>
+    <div className="mb-6">
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        onClick={() => navigate(`/game/${gameId}/add-coupon`)}
+        className="shadow-medium hover:shadow-strong"
+      >
+        <span className="mr-2">+</span>
+        쿠폰 추가하기
+      </Button>
+    </div>
   );
 }
