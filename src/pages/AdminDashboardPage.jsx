@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { getGameList, deleteGame, setGameOfficial, setGameImage } from "../api/gameApi";
-import HeaderBanner from "../components/HeaderBanner";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Badge from "../components/ui/Badge";
+import Input from "../components/ui/Input";
 
 export default function AdminDashboardPage() {
   const { isAuthenticated, logout, loading: authLoading } = useAdminAuth();
@@ -10,6 +13,7 @@ export default function AdminDashboardPage() {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [imageModal, setImageModal] = useState({ open: false, gameId: null, imageData: "" });
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -25,6 +29,7 @@ export default function AdminDashboardPage() {
   const loadGames = async () => {
     try {
       setLoading(true);
+      setError("");
       const data = await getGameList();
       setGames(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -36,12 +41,14 @@ export default function AdminDashboardPage() {
   };
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/admin/login");
+    if (window.confirm("로그아웃 하시겠습니까?")) {
+      await logout();
+      navigate("/admin/login");
+    }
   };
 
-  const handleDeleteGame = async (gameId) => {
-    if (!window.confirm("정말 이 게임을 삭제하시겠습니까?")) {
+  const handleDeleteGame = async (gameId, gameTitle) => {
+    if (!window.confirm(`"${gameTitle}" 게임을 정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
       return;
     }
 
@@ -58,7 +65,6 @@ export default function AdminDashboardPage() {
   const handleSetOfficial = async (gameId, currentOfficial) => {
     try {
       await setGameOfficial(gameId, !currentOfficial);
-      alert(`게임이 ${!currentOfficial ? "오피셜" : "일반"}으로 변경되었습니다.`);
       loadGames();
     } catch (err) {
       console.error("오피셜 설정 실패:", err);
@@ -66,13 +72,20 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleSetImage = async (gameId) => {
-    const imageData = prompt("이미지 데이터 URL을 입력하세요:");
-    if (!imageData) return;
+  const handleOpenImageModal = (gameId) => {
+    setImageModal({ open: true, gameId, imageData: "" });
+  };
+
+  const handleSetImage = async () => {
+    if (!imageModal.imageData.trim()) {
+      alert("이미지 URL을 입력해주세요.");
+      return;
+    }
 
     try {
-      await setGameImage(gameId, imageData);
+      await setGameImage(imageModal.gameId, imageModal.imageData);
       alert("이미지가 설정되었습니다.");
+      setImageModal({ open: false, gameId: null, imageData: "" });
       loadGames();
     } catch (err) {
       console.error("이미지 설정 실패:", err);
@@ -82,109 +95,155 @@ export default function AdminDashboardPage() {
 
   if (authLoading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <div className="text-lg">로딩 중...</div>
+      <div className="min-h-screen bg-gradient-to-b from-secondary-50 to-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <HeaderBanner />
-      <div className="w-full max-w-6xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">관리자 대시보드</h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
-          >
-            로그아웃
-          </button>
+    <div className="min-h-screen bg-gradient-to-b from-secondary-50 to-white">
+      <div className="bg-white border-b border-secondary-200 sticky top-0 z-50 shadow-soft">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <h1 className="text-2xl font-bold text-secondary-900">관리자 대시보드</h1>
+            <Button variant="danger" size="sm" onClick={handleLogout}>
+              로그아웃
+            </Button>
+          </div>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+          <div className="mb-6 bg-danger-50 border-2 border-danger-200 text-danger-700 px-4 py-3 rounded-xl">
             {error}
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">게임 목록</h2>
-            <button
-              onClick={loadGames}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              새로고침
-            </button>
+        <Card className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-secondary-900 mb-1">게임 관리</h2>
+              <p className="text-sm text-secondary-500">총 {games.length}개의 게임</p>
+            </div>
+            <Button variant="primary" size="md" onClick={loadGames} disabled={loading}>
+              {loading ? "로딩 중..." : "새로고침"}
+            </Button>
           </div>
 
           {loading ? (
-            <div className="text-center py-8 text-gray-500">로딩 중...</div>
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary-600 border-t-transparent mb-4"></div>
+              <p className="text-secondary-500">로딩 중...</p>
+            </div>
           ) : games.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">등록된 게임이 없습니다.</div>
+            <div className="text-center py-12">
+              <p className="text-secondary-500 text-base">등록된 게임이 없습니다.</p>
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {games.map((game) => (
-                <div
-                  key={game.id}
-                  className="border rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition"
-                >
-                  <div 
-                    className="flex items-center gap-4 flex-1 cursor-pointer"
-                    onClick={() => navigate(`/admin/game/${game.id}`)}
-                  >
-                    {game.gameImageUrl && (
-                      <img
-                        src={game.gameImageUrl}
-                        alt={game.title}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                    )}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold">{game.title}</h3>
-                        {game.official && (
-                          <span className="bg-yellow-400 text-yellow-900 px-2 py-1 rounded text-xs font-semibold">
-                            오피셜
-                          </span>
-                        )}
+                <Card key={game.id} interactive className="p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div
+                      className="flex items-center gap-4 flex-1 cursor-pointer min-w-0"
+                      onClick={() => navigate(`/admin/game/${game.id}`)}
+                    >
+                      {game.gameImageUrl ? (
+                        <img
+                          src={game.gameImageUrl}
+                          alt={game.title}
+                          className="w-16 h-16 rounded-xl object-cover shadow-soft flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center flex-shrink-0">
+                          <span className="text-2xl">🎮</span>
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-lg font-bold text-secondary-900 truncate">{game.title}</h3>
+                          {game.official && (
+                            <Badge variant="warning" size="sm">오피셜</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-secondary-500">ID: {game.id}</p>
                       </div>
-                      <p className="text-sm text-gray-500">ID: {game.id}</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 flex-shrink-0">
+                      <Button
+                        variant={game.official ? "secondary" : "outline"}
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSetOfficial(game.id, game.official);
+                        }}
+                      >
+                        {game.official ? "오피셜 해제" : "오피셜 설정"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenImageModal(game.id);
+                        }}
+                      >
+                        이미지
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteGame(game.id, game.title);
+                        }}
+                      >
+                        삭제
+                      </Button>
                     </div>
                   </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleSetOfficial(game.id, game.official)}
-                      className={`px-3 py-1 rounded text-sm ${
-                        game.official
-                          ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                          : "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                      } transition`}
-                    >
-                      {game.official ? "오피셜 해제" : "오피셜 설정"}
-                    </button>
-                    <button
-                      onClick={() => handleSetImage(game.id)}
-                      className="px-3 py-1 rounded text-sm bg-blue-100 text-blue-800 hover:bg-blue-200 transition"
-                    >
-                      이미지 설정
-                    </button>
-                    <button
-                      onClick={() => handleDeleteGame(game.id)}
-                      className="px-3 py-1 rounded text-sm bg-red-100 text-red-800 hover:bg-red-200 transition"
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
-        </div>
+        </Card>
       </div>
+
+      {/* 이미지 설정 모달 */}
+      {imageModal.open && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <h3 className="text-xl font-bold text-secondary-900 mb-4">이미지 URL 설정</h3>
+            <Input
+              label="이미지 URL"
+              placeholder="https://example.com/image.jpg"
+              value={imageModal.imageData}
+              onChange={(e) => setImageModal({ ...imageModal, imageData: e.target.value })}
+            />
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                size="md"
+                fullWidth
+                onClick={() => setImageModal({ open: false, gameId: null, imageData: "" })}
+              >
+                취소
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                fullWidth
+                onClick={handleSetImage}
+              >
+                설정
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
-

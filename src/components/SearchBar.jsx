@@ -5,6 +5,7 @@ import { searchGame } from "../api/gameApi";
 export default function SearchBar() {
   const [keyword, setKeyword] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,6 +14,7 @@ export default function SearchBar() {
       return;
     }
 
+    setLoading(true);
     const delay = setTimeout(async () => {
       try {
         const result = await searchGame(keyword);
@@ -20,8 +22,11 @@ export default function SearchBar() {
         setSuggestions(list);
       } catch (e) {
         console.error("검색 실패", e);
+        setSuggestions([]);
+      } finally {
+        setLoading(false);
       }
-    }, 250);
+    }, 300);
 
     return () => clearTimeout(delay);
   }, [keyword]);
@@ -29,28 +34,59 @@ export default function SearchBar() {
   const handleSelect = (id) => {
     navigate(`/game/${id}`);
     setSuggestions([]);
+    setKeyword("");
   };
 
   return (
-    <div className="w-full max-w-xl mt-8 relative">
-      <input
-        type="text"
-        placeholder="게임을 검색하세요"
-        value={keyword}
-        onChange={(e) => setKeyword(e.target.value)}
-        className="w-full border border-gray-300 p-3 rounded-full shadow
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 pl-5"
-      />
+    <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 relative">
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg
+            className="h-5 w-5 text-secondary-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="게임을 검색하세요..."
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          className="w-full pl-12 pr-4 py-4 text-base bg-white border-2 border-secondary-200 rounded-2xl shadow-soft focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 placeholder:text-secondary-400"
+        />
+        {loading && (
+          <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-600 border-t-transparent"></div>
+          </div>
+        )}
+      </div>
 
       {suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 bg-white border rounded-xl shadow mt-2 overflow-hidden z-50">
+        <div className="absolute left-0 right-0 mt-2 bg-white border-2 border-secondary-200 rounded-2xl shadow-strong overflow-hidden z-50 max-h-96 overflow-y-auto">
           {suggestions.map((item) => (
             <div
               key={item.id}
-              className="p-3 hover:bg-gray-100 cursor-pointer text-black"
+              className="px-4 py-3 hover:bg-secondary-50 cursor-pointer transition-colors duration-150 border-b border-secondary-100 last:border-b-0"
               onClick={() => handleSelect(item.id)}
             >
-              {item.title}
+              <div className="flex items-center gap-3">
+                {item.gameImageUrl && (
+                  <img
+                    src={item.gameImageUrl}
+                    alt={item.title}
+                    className="w-10 h-10 rounded-lg object-cover"
+                  />
+                )}
+                <span className="text-base font-medium text-secondary-900">{item.title}</span>
+              </div>
             </div>
           ))}
         </div>

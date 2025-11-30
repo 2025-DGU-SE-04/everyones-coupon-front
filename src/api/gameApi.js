@@ -47,9 +47,14 @@ export const getGameDetail = async (gameId) => {            //쿠폰 조회
   return res.data;
 };
 
-export const getGameCoupons = async (gameId, page = 0, size = 50) => {
+export const getGameCoupons = async (gameId, page = 0, size = 50, sort = ["createdAt"]) => {
     const res = await axios.get(`${BASE_URL}/coupons`, {
-      params: { gameId, page, size }
+      params: { 
+        gameId, 
+        page, 
+        size,
+        sort: sort // 배열을 쿼리 파라미터로 전달
+      }
     });
   
     return res.data;   // content를 제거하면 안됨!
