@@ -6,6 +6,9 @@ module.exports = {
   theme: {
     extend: {
       // 🎨 색상 팔레트 - 통일감 있는 브랜드 컬러
+      fontFamily: {
+        sans: ["Pretendard", "ui-sans-serif", "system-ui"], // 기본 폰트 교체
+      },
       colors: {
         // Primary (메인 브랜드 컬러)
         primary: {
