@@ -6,8 +6,25 @@ import { voteCoupon } from "../api/gameApi";
 export default function CouponItem({ coupon, onVoteUpdate }) {
   const [validCount, setValidCount] = useState(coupon.validCount || coupon.like || 0);
   const [invalidCount, setInvalidCount] = useState(coupon.invalidCount || coupon.dislike || 0);
-  const [userVote, setUserVote] = useState(null); // 'like' | 'dislike' | null
+  const [userVote, setUserVote] = useState(() => {
+    if (coupon.myVote === "VALID") return "like";
+    if (coupon.myVote === "INVALID") return "dislike";
+    return null;
+  }); // 'like' | 'dislike' | null
   const [voting, setVoting] = useState(false); // 투표 중 로딩 상태
+  // 서버에서 새 쿠폰 데이터가 내려왔을 때(리로드 시) 상태 동기화
+  useEffect(() => {
+    setValidCount(coupon.validCount || coupon.like || 0);
+    setInvalidCount(coupon.invalidCount || coupon.dislike || 0);
+
+    if (coupon.myVote === "VALID") {
+      setUserVote("like");
+    } else if (coupon.myVote === "INVALID") {
+      setUserVote("dislike");
+    } else {
+      setUserVote(null);
+    }
+  }, [coupon.validCount, coupon.invalidCount, coupon.like, coupon.dislike, coupon.myVote]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(coupon.code);
@@ -54,25 +71,21 @@ export default function CouponItem({ coupon, onVoteUpdate }) {
       setVoting(true);
       const response = await voteCoupon(coupon.id, isWorking);
       
-      // API 응답에서 업데이트된 실제 카운트로 동기화
-      // 서버에서 중복 투표를 막았을 수 있으므로 서버 응답을 우선시
-      if (response.validCount !== undefined) {
-        setValidCount(response.validCount);
-      } else if (response.validCount === 0) {
-        setValidCount(0);
+      // 서버 응답 기준으로 다시 동기화
+      const { myVote, validCount: serverValidCount, invalidCount: serverInvalidCount } = response;
+
+      if (typeof serverValidCount === "number") {
+        setValidCount(serverValidCount);
       }
-      
-      if (response.invalidCount !== undefined) {
-        setInvalidCount(response.invalidCount);
-      } else if (response.invalidCount === 0) {
-        setInvalidCount(0);
+      if (typeof serverInvalidCount === "number") {
+        setInvalidCount(serverInvalidCount);
       }
 
-      // 서버 응답에 투표 상태 정보가 있다면 동기화
-      if (response.userVote !== undefined) {
-        setUserVote(response.userVote);
-      } else if (response.voted === false) {
-        // 중복 투표로 인해 거부된 경우
+      if (myVote === "VALID") {
+        setUserVote("like");
+      } else if (myVote === "INVALID") {
+        setUserVote("dislike");
+      } else {
         setUserVote(null);
       }
 

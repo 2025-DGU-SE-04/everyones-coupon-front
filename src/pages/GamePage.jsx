@@ -38,8 +38,7 @@ export default function GamePage() {
         dday: c.dday,
         validCount: c.validCount,
         invalidCount: c.invalidCount,
-        like: c.validCount,
-        dislike: c.invalidCount,
+        myVote: c.myVote,
       }));
       setCoupons(mappedCoupons);
     } catch (error) {
