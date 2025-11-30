@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { searchGame } from "../api/gameApi";
 import Badge from "./ui/Badge";
@@ -9,6 +9,20 @@ export default function SearchBar() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const wrapperRef = useRef(null);
+
+  /** 🔹 외부 클릭 감지 */
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setSuggestions([]);     // 검색창 닫기
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /** 🔹 검색어 변경 시 검색 */
   useEffect(() => {
     if (!keyword.trim()) {
       setSuggestions([]);
@@ -21,8 +35,7 @@ export default function SearchBar() {
         const result = await searchGame(keyword);
         const list = result.content ?? result;
         setSuggestions(list);
-      } catch (e) {
-        console.error("검색 실패", e);
+      } catch {
         setSuggestions([]);
       } finally {
         setLoading(false);
@@ -32,17 +45,16 @@ export default function SearchBar() {
     return () => clearTimeout(delay);
   }, [keyword]);
 
+  /** 🔹 포커스 시 기본 추천 */
   const handleFocus = async () => {
-    // 이미 검색어 입력했거나, 추천 목록이 있으면 굳이 다시 안 부름
     if (keyword.trim() || suggestions.length > 0) return;
 
     try {
       setLoading(true);
-      const result = await searchGame(""); // 빈 문자열로 기본 검색
+      const result = await searchGame("");
       const list = result.content ?? result;
-      setSuggestions(list.slice(0, 3));    // 3개만 잘라서 노출
-    } catch (e) {
-      console.error("기본 추천 로딩 실패", e);
+      setSuggestions(list.slice(0, 3));
+    } catch {
       setSuggestions([]);
     } finally {
       setLoading(false);
@@ -56,8 +68,9 @@ export default function SearchBar() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 sm:px-6 relative">
+    <div ref={wrapperRef} className="w-full max-w-2xl mx-auto px-4 sm:px-6 relative">
       <div className="relative">
+        {/* 🔍 아이콘 */}
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <svg
             className="h-5 w-5 text-secondary-400"
@@ -73,14 +86,17 @@ export default function SearchBar() {
             />
           </svg>
         </div>
+
+        {/* 검색창 */}
         <input
           type="text"
           placeholder="게임을 검색하세요..."
           value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
           onFocus={handleFocus}
+          onChange={(e) => setKeyword(e.target.value)}
           className="w-full pl-12 pr-4 py-4 text-base bg-white border-2 border-secondary-200 rounded-2xl shadow-soft focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 placeholder:text-secondary-400"
         />
+
         {loading && (
           <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
             <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-600 border-t-transparent"></div>
@@ -88,6 +104,7 @@ export default function SearchBar() {
         )}
       </div>
 
+      {/* 🔹 자동완성 결과창 */}
       {suggestions.length > 0 && (
         <div className="absolute left-0 right-0 mt-2 bg-white border-2 border-secondary-200 rounded-2xl shadow-strong overflow-hidden z-50 max-h-96 overflow-y-auto">
           {suggestions.map((item) => (
@@ -110,7 +127,7 @@ export default function SearchBar() {
                       {item.title}
                     </span>
                     {item.official && (
-                      <Badge variant="warning" size="sm" className="flex-shrink-0">
+                      <Badge variant="warning" size="sm">
                         오피셜
                       </Badge>
                     )}
@@ -124,12 +141,7 @@ export default function SearchBar() {
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
