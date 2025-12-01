@@ -46,7 +46,7 @@
 
 ## 환경 설정
 - 기본 백엔드 API 엔드포인트는 `src/api/gameApi.js`에 정의된 Azure App Service URL(`https://everyones-coupon-webapp.azurewebsites.net/api`)을 사용합니다.
-- 별도의 환경 변수가 필요하지 않지만, 다른 백엔드를 사용하려면 해당 파일의 `BASE_URL`을 변경하세요.
+- 별도의 환경 변수가 필요하지 않지만, 다른 백엔드를 사용하려면 해당 파일(src/api/gameApi.js) `BASE_URL`을 변경하세요.
 
 ## 프로젝트 구조
 주요 디렉터리 개요:
