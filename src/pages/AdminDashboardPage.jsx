@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminAuth } from "../context/AdminAuthContext";
-import { getGameList, deleteGame, setGameOfficial, setGameImage } from "../api/gameApi";
+import { getGameListAll, deleteGame, setGameOfficial, setGameImage } from "../api/gameApi";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
@@ -30,7 +30,7 @@ export default function AdminDashboardPage() {
     try {
       setLoading(true);
       setError("");
-      const data = await getGameList();
+      const data = await getGameListAll();
       setGames(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("게임 목록 로드 실패:", err);

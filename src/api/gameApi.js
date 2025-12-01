@@ -12,6 +12,11 @@ export const getGameList = async () => {                    //요즘뜨는게임
   return res.data;
 };
 
+export async function getGameListAll() {
+  const res = await client.get("/games");
+  return res.data;  
+}
+
 export const searchGame = async (keyword,page=0) => {              //게임검색
     const res = await axios.get(`${BASE_URL}/games/search`, {
         params: { keyword, page }
