@@ -13,7 +13,7 @@ export const getGameList = async () => {                    //요즘뜨는게임
 };
 
 export async function getGameListAll() {
-  const res = await client.get("/games");
+  const res = await axios.get(`${BASE_URL}/games/`);
   return res.data;  
 }
 
